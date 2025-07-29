@@ -39,7 +39,7 @@ class DataTransformation:
             cat_pipeline = Pipeline(
                 steps=[
                     ("inputer",SimpleImputer(strategy="most_frequent")),
-                    ("one_hot_encoder",OneHotEncoder()),
+                    ("one_hot_encoder",OneHotEncoder(sparse_output=False)),
                     ("scaler", StandardScaler(with_mean=False))
                 ]
             )
@@ -60,6 +60,7 @@ class DataTransformation:
         try:
             train_df=pd.read_csv(train_path)
             test_df=pd.read_csv(test_path)
+            
 
             logging.info("Read train and test data completed")
 
@@ -80,8 +81,18 @@ class DataTransformation:
             logging.info(
                 f"Applying preprocessing object on training dataframe and testing dataframe."
             )
+            
+            
 
-            input_feature_train_arr=preprocessing_obj.fit_transform(input_feature_train_df)
+            try:
+                 input_feature_train_arr = preprocessing_obj.fit_transform(input_feature_train_df)
+            except Exception as e:
+                print("\n Error during fit_transform on input_feature_train_df")
+                print("Columns:", input_feature_train_df.columns.tolist())
+                print("Dtypes:\n", input_feature_train_df.dtypes)
+                print("Head:\n", input_feature_train_df.head())
+                raise e
+
             input_feature_test_arr=preprocessing_obj.transform(input_feature_test_df)
 
             train_arr = np.c_[
